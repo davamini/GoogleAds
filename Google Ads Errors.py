@@ -114,10 +114,9 @@ delete_enums(table_enum_name_description)
 added_resource_names_dict = {}
 for i in range(len(table_enum_name_description)):
     for j in range(1, len(table_enum_name_description[i]), 2):
-        key = table_enum_name_description[i][j-1]
-        value = ''.join([word for word in table_enum_name_description[i][j] if len(table_enum_name_description[i][j]) >= 4 and 'http' not in table_enum_name_description[i][j]])
-        added_resource_names_dict[key + ", " + resource_names[i]] = value#.replace(', ', '').replace('.', '').replace('\n', '').replace('\r', '')
-        print(value)
+        key = table_enum_name_description[i][j-1].replace(', ', '').replace(',', '')
+        value = table_enum_name_description[i][j]
+        added_resource_names_dict[key + "." + resource_names[i]] = value
 
 
 ############################
@@ -155,11 +154,24 @@ new_field_dict = add_resource_name_to_field_new_dict(table_field_name_type_group
 final_dict = merge(added_resource_names_dict, new_field_dict)
 
 
-with open('Google Ads Errors.csv', 'w') as f:
-    f.write('Field/Enum Name, ResourceName/Type, Description\n')
-    for key in final_dict.keys():
-        keys = key.split('.')[0]
-        fdict = final_dict[key]
-        fdict = '"{}"'.format(str(fdict).replace(', ', '^^').replace('.', '').replace('\n', '').replace('\r', '').replace("'http", "http"))
-        f.write("%s,%s\n"%(keys, fdict))
+with open('Google Ads Errors.csv', 'w') as csv_file:
+    writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL, lineterminator = '\n', delimiter = ',')
+    writer.writerow(['Field/Enum Name', 'ResourceName', 'Type', 'Description','\n'])
+    for key, value in final_dict.items():
+        #print(key, value)
+        if key.split('.')[0] == key.split('.')[0].upper():
+            field_enum_name = key.split('.')[0]
+            resource_name = key.split('.')[1]
+            print(resource_name)
+            description = value
+            #print(resource_name)
+            #fdict = '"{}"'.format(str(fdict).replace('.', '').replace('\n', '').replace('\r', '').replace("'http", "http"))
+            #f.write("%s,%s\n"%(keys, fdict))
+            writer.writerow([field_enum_name, resource_name,' ', description])
 
+        elif key != key.upper() and len(value) > 2:
+            field_name = key
+            resource_name = value[-1]
+            description = value[1]
+            type_ = value[0]
+            writer.writerow([field_name, resource_name, type_, description])
